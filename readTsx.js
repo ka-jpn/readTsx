@@ -1,11 +1,12 @@
 'use strict';
 // @ts-ignore
 import * as esbuild from 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.28.1/esm/browser.js';
+/** @typedef {HTMLElement | string | number | boolean | null | undefined} FlatElem */
 /**
  * JSXの要素をパースして実際のDOM要素を生成するファクトリ関数
  * @param {string} tag タグ名
  * @param {Record<string, ((evt: Event) => void) | string> | null} attrs 属性やイベントハンドラ
- * @param {...HTMLElement | string | number | boolean | null | undefined} children 子要素
+ * @param {...FlatElem | FlatElem[] | any[]} children 子要素
  * @returns {HTMLElement} 生成されたHTML要素
  */
 globalThis.createDOM = (tag, attrs, ...children) => {
@@ -21,10 +22,12 @@ globalThis.createDOM = (tag, attrs, ...children) => {
       else { element.setAttribute(key, value); }
     }
   }
-  /** @param {HTMLElement} element, @param {...HTMLElement | string | number | boolean | null | undefined} children */
+  /** @param {HTMLElement} element, @param {...FlatElem | FlatElem[] | any[]} children */
   function appendChildren(element,...children){
-    children.forEach(child=>appendChild(element,child));
-    /** @param {HTMLElement} element, @param {HTMLElement | string | number | boolean | null | undefined} child */
+    /** @type {FlatElem[]} */
+    const flatChildren = children.flat(Infinity);
+    flatChildren.forEach(child=>appendChild(element,child));
+    /** @param {HTMLElement} element, @param {FlatElem} child */
     function appendChild(element,child){
       if(typeof child === "string"){element.appendChild(document.createTextNode(child));}
       else if(typeof child === "number"){element.appendChild(document.createTextNode(child.toString()));}
