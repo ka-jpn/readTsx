@@ -9,7 +9,7 @@ import * as esbuild from 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.28.1/esm/b
  * @param {...FlatElem | FlatElem[] | any[]} children 子要素
  * @returns {HTMLElement} 生成されたHTML要素
  */
-globalThis.createDOM = (tag, attrs, ...children) => {
+const createDOM = (tag, attrs, ...children) => {
   const el = document.createElement(tag);
   attachAttribute(el,attrs);
   appendChildren(el,...children);
@@ -35,15 +35,10 @@ globalThis.createDOM = (tag, attrs, ...children) => {
     }
   }
 };
-// 1. esbuildの初期化
-await esbuild.initialize({ wasmURL: 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.28.1/esbuild.wasm' });
-// 2. HTML側の script タグから `data-main` 属性の値を取得
-const entryPoint = document.querySelector('script[data-main]')?.getAttribute('data-main');
-if (entryPoint) { await bundleAndExecuteTSX(entryPoint); } else { console.error('readTsx.js error: script タグに data-main 属性が指定されていません。'); }
 /** @param {string} filePath */
-async function bundleAndExecuteTSX(filePath) {
+const bundleAndExecuteTSX = async (filePath) => {
   try {
-    // 3. esbuild.build を使用して、依存する複数ファイルを1つに結合（バンドル）
+    // esbuild.build を使用して、依存する複数ファイルを1つに結合（バンドル）
     const result = await esbuild.build({
       entryPoints: [filePath],
       bundle: true,            // 複数ファイルを1つにまとめる設定
@@ -76,10 +71,24 @@ async function bundleAndExecuteTSX(filePath) {
         }
       }]
     });
-    // 4. バンドルされた単一のJSコードを取得
+    // バンドルされた単一のJSコードを取得
     const bundledCode = result.outputFiles[0].text;
-    // 5. Blob を生成して動的 import() で実行
+    // Blob を生成して動的 import() で実行
     const url = URL.createObjectURL(new Blob([bundledCode], { type: "text/javascript" }));
     try { await import(url); } finally { URL.revokeObjectURL(url); }
   } catch (error) { console.error('TSX Bundle/Execute Error:', error); }
 }
+/** @param {string | null | undefined} entryPointFilePath */
+const execute = async (entryPointFilePath) => {
+  // トランスパイルと実行
+  if (entryPointFilePath) { await bundleAndExecuteTSX(entryPointFilePath); } else { console.error('readTsx.js error: script タグに data-main 属性が指定されていません。'); }
+}
+const init = async () => {
+// esbuildの初期化
+  await esbuild.initialize({ wasmURL: 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.28.1/esbuild.wasm' });
+  /** @type {any} */ (globalThis).createDOM = createDOM;
+}
+// ↑定義コード
+// ↓実行コード
+await init();
+await execute(document.querySelector('script[data-main]')?.getAttribute('data-main'));
