@@ -14,6 +14,7 @@ readTs.jsxや.tsxのパスが違う場合はそのパスに書き換えるだけ
 data-mainに指定した.tsxから他の.tsxを参照していても正常にトランスパイルして実行します  
 TSXの他にtypescript(.ts)にも対応しています  
 
-サンプルとして
-typescriptを複数読み込む useTsSample と  
-TSXを複数読み込む useTsxSample があります  
+サンプルとして  
+・typescriptを複数読み込む useTsSample  
+・TSXを複数読み込む useTsxSample  
+があります
