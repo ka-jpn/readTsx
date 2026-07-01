@@ -15,10 +15,12 @@ const createDOM = (tag, attrs, ...children) => {
   appendChildren(el,...children);
   return el;
   /** @param {HTMLElement} element, @param {Record<string, ((evt: Event) => void) | string> | null} attrs */
-  function attachAttribute(element,attrs){
-    for (const [key, value] of Object.entries(attrs??[])) {
-      if (typeof value === "function") { element.addEventListener(key.substring(2).toLowerCase(),value); }
-      else if (key === "className" || key === "class") { element.className = value; }
+  function attachAttribute(element, attrs){
+    for (const [key, value] of Object.entries(attrs ?? {})) {
+      if (value === false || value == null) { continue; }
+      if (typeof value === "function") { element.addEventListener(key.substring(2).toLowerCase(), value); }
+      else if (value === true) { element.setAttribute(key, String(value)); }
+      else if (key === "className" || key === "class") { element.className = value; } 
       else { element.setAttribute(key, value); }
     }
   }
